@@ -1,3 +1,9 @@
+/**
+ * @module Structure
+ * @submodule Structure
+ * @for p5
+ * @requires core
+ */
 define(function (require) {
 
   'use strict';
@@ -5,69 +11,233 @@ define(function (require) {
   var p5 = require('core');
 
   p5.prototype.exit = function() {
-    throw 'Not implemented';
+    throw 'exit() not implemented, see remove()';
   };
-
+  /**
+   * Stops p5.js from continuously executing the code within draw(). If loop()
+   * is called, the code in draw() begins to run continuously again. If using
+   * noLoop() in setup(), it should be the last line inside the block.
+   * 
+   * When noLoop() is used, it's not possible to manipulate or access the
+   * screen inside event handling functions such as mousePressed() or
+   * keyPressed(). Instead, use those functions to call redraw() or loop(),
+   * which will run draw(), which can update the screen properly. This means
+   * that when noLoop() has been called, no drawing can happen, and functions
+   * like saveFrame() or loadPixels() may not be used.
+   * 
+   * Note that if the sketch is resized, redraw() will be called to update the
+   * sketch, even after noLoop() has been specified. Otherwise, the sketch
+   * would enter an odd state until loop() was called.
+   *
+   * @method noLoop
+   */
   p5.prototype.noLoop = function() {
-    this.settings.loop = false;
+    this._loop = false;
+    if (this._drawInterval) {
+      clearInterval(this._drawInterval);
+    }
   };
-
+  /**
+   * By default, p5.js loops through draw() continuously, executing the code
+   * within it. However, the draw() loop may be stopped by calling noLoop().
+   * In that case, the draw() loop can be resumed with loop().
+   * 
+   * @method loop
+   */
   p5.prototype.loop = function() {
-    this.settings.loop = true;
+    this._loop = true;
+    this._draw();
   };
 
-  p5.prototype.pushStyle = function() {
-
+  /**
+   * The push() function saves the current drawing style settings and 
+   * transformations, while pop() restores these settings. Note that these 
+   * functions are always used together. They allow you to change the style 
+   * and transformation settings and later return to what you had. When a new 
+   * state is started with push(), it builds on the current style and transform
+   * information. The push() and pop() functions can be embedded to provide 
+   * more control. (See the second example for a demonstration.)
+   * <br><br>
+   * push() stores information related to the current transformation state
+   * and style settings controlled by the following functions: fill(), 
+   * stroke(), tint(), strokeWeight(), strokeCap(), strokeJoin(), 
+   * imageMode(), rectMode(), ellipseMode(), colorMode(), textAlign(), 
+   * textFont(), textMode(), textSize(), textLeading().
+   *
+   * @method push
+   * @example
+   * <div>
+   * <code>
+   * ellipse(0, 50, 33, 33);  // Left circle
+   *
+   * push();  // Start a new drawing state
+   * strokeWeight(10);
+   * fill(204, 153, 0);
+   * translate(50, 0);
+   * ellipse(0, 50, 33, 33);  // Middle circle
+   * pop();  // Restore original state
+   *
+   * ellipse(100, 50, 33, 33);  // Right circle
+   * </code>
+   * </div>
+   * <div>
+   * <code>
+   * ellipse(0, 50, 33, 33);  // Left circle
+   *
+   * push();  // Start a new drawing state
+   * strokeWeight(10);
+   * fill(204, 153, 0);
+   * ellipse(33, 50, 33, 33);  // Left-middle circle
+   *
+   * push();  // Start another new drawing state
+   * stroke(0, 102, 153);
+   * ellipse(66, 50, 33, 33);  // Right-middle circle
+   * pop();  // Restore previous state
+   *
+   * pop();  // Restore original state
+   *
+   * ellipse(100, 50, 33, 33);  // Right circle
+   * </code>
+   * </div>
+   */
+  p5.prototype.push = function () {
+    this.drawingContext.save();
     this.styles.push({
-      fillStyle:   this.curElement.context.fillStyle, // fill
-      strokeStyle: this.curElement.context.strokeStyle, // stroke
-      lineWidth:   this.curElement.context.lineWidth, // strokeWeight
-      // @todo tint
-      lineCap:     this.curElement.context.lineCap, // strokeCap
-      lineJoin:    this.curElement.context.lineJoin, // strokeJoin
-      imageMode:   this.settings.imageMode, // imageMode
-      rectMode:    this.settings.rectMode, // rectMode
-      ellipseMode: this.settings.ellipseMode, // ellipseMode
-      // @todo shapeMode
-      colorMode:   this.settings.colorMode, // colorMode
-      textAlign:   this.curElement.context.textAlign, // textAlign
-      textFont:    this.settings.textFont,
-      textLeading: this.settings.textLeading, // textLeading
-      textSize:    this.settings.textSize, // textSize
-      textStyle:   this.settings.textStyle // textStyle
+      doStroke: this._doStroke,
+      doFill: this._doFill,
+      tint: this._tint,
+      imageMode: this._imageMode,
+      rectMode: this._rectMode,
+      ellipseMode: this._ellipseMode,
+      colorMode: this._colorMode,
+      textFont: this.textFont,
+      textLeading: this.textLeading,
+      textSize: this.textSize,
+      textStyle: this.textStyle
     });
   };
 
-  p5.prototype.popStyle = function() {
-
+  /**
+   * The push() function saves the current drawing style settings and 
+   * transformations, while pop() restores these settings. Note that these 
+   * functions are always used together. They allow you to change the style 
+   * and transformation settings and later return to what you had. When a new 
+   * state is started with push(), it builds on the current style and transform
+   * information. The push() and pop() functions can be embedded to provide 
+   * more control. (See the second example for a demonstration.)
+   * <br><br>
+   * push() stores information related to the current transformation state
+   * and style settings controlled by the following functions: fill(), 
+   * stroke(), tint(), strokeWeight(), strokeCap(), strokeJoin(), 
+   * imageMode(), rectMode(), ellipseMode(), colorMode(), textAlign(), 
+   * textFont(), textMode(), textSize(), textLeading().
+   * 
+   * @method pop   
+   * @example
+   * <div>
+   * <code>
+   * ellipse(0, 50, 33, 33);  // Left circle
+   *
+   * push();  // Start a new drawing state
+   * translate(50, 0);
+   * strokeWeight(10);
+   * fill(204, 153, 0);
+   * ellipse(0, 50, 33, 33);  // Middle circle
+   * pop();  // Restore original state
+   *
+   * ellipse(100, 50, 33, 33);  // Right circle
+   * </code>
+   * </div>
+   * <div>
+   * <code>
+   * ellipse(0, 50, 33, 33);  // Left circle
+   *
+   * push();  // Start a new drawing state
+   * strokeWeight(10);
+   * fill(204, 153, 0);
+   * ellipse(33, 50, 33, 33);  // Left-middle circle
+   *
+   * push();  // Start another new drawing state
+   * stroke(0, 102, 153);
+   * ellipse(66, 50, 33, 33);  // Right-middle circle
+   * pop();  // Restore previous state
+   *
+   * pop();  // Restore original state
+   *
+   * ellipse(100, 50, 33, 33);  // Right circle
+   * </code>
+   * </div>
+   */
+  p5.prototype.pop = function () {
+    this.drawingContext.restore();
     var lastS = this.styles.pop();
-
-    this.curElement.context.fillStyle = lastS.fillStyle; // fill
-    this.curElement.context.strokeStyle = lastS.strokeStyle; // stroke
-    this.curElement.context.lineWidth = lastS.lineWidth; // strokeWeight
-    // @todo tint
-    this.curElement.context.lineCap = lastS.lineCap; // strokeCap
-    this.curElement.context.lineJoin = lastS.lineJoin; // strokeJoin
-    this.settings.imageMode = lastS.imageMode; // imageMode
-    this.settings.rectMode = lastS.rectMode; // rectMode
-    this.settings.ellipseMode = lastS.ellipseMode; // elllipseMode
-    // @todo shapeMode
-    this.settings.colorMode = lastS.colorMode; // colorMode
-    this.curElement.context.textAlign = lastS.textAlign; // textAlign
-    this.settings.textFont = lastS.textFont;
-    this.settings.textLeading = lastS.textLeading; // textLeading
-    this.settings.textSize = lastS.textSize; // textSize
-    this.settings.textStyle = lastS.textStyle; // textStyle
-
+    this._doStroke = lastS.doStroke;
+    this._doFill = lastS.doFill;
+    this._tint = lastS.tint;
+    this._imageMode = lastS.imageMode;
+    this._rectMode = lastS.rectMode;
+    this._ellipseMode = lastS.ellipseMode;
+    this._colorMode = lastS.colorMode;
+    this.textFont = lastS.textFont;
+    this.textLeading = lastS.textLeading;
+    this.textSize = lastS.textSize;
+    this.textStyle = lastS.textStyle;
   };
 
+  p5.prototype.pushStyle = function() {
+    throw new Error('pushStyle() not used, see push()');
+  };
+
+  p5.prototype.popStyle = function() {
+    throw new Error('popStyle() not used, see pop()');
+  };
+
+  /**
+   *
+   * Executes the code within draw() one time. This functions allows the
+   * program to update the display window only when necessary, for example
+   * when an event registered by mousePressed() or keyPressed() occurs. 
+   *
+   * In structuring a program, it only makes sense to call redraw() within
+   * events such as mousePressed(). This is because redraw() does not run
+   * draw() immediately (it only sets a flag that indicates an update is
+   * needed).
+   * 
+   * The redraw() function does not work properly when called inside draw().
+   * To enable/disable animations, use loop() and noLoop().
+   *
+   * @method redraw
+   * @example
+   *   <div><code>
+   *     var x = 0;
+   *
+   *     function setup() {
+   *       createCanvas(200, 200);
+   *       noLoop();
+   *     }
+   *
+   *     function draw() {
+   *       background(204);
+   *       line(x, 0, x, height); 
+   *     }
+   *
+   *     function mousePressed() {
+   *       x += 1;
+   *       redraw();
+   *     }
+   *   </code></div>
+   */
   p5.prototype.redraw = function() {
-    throw 'Not implemented';
+    var context = this._isGlobal ? window : this;
+    if (context.draw) {
+      context.draw();
+    }
   };
 
   p5.prototype.size = function() {
-    throw 'Not implemented';
+    throw 'size() not implemented, see createCanvas()';
   };
+
 
   return p5;
 

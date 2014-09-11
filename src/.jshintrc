@@ -13,10 +13,12 @@
   "quotmark": "single",
   "undef": true,
   "unused": "vars",
+  "maxlen": 80,
 
   "browser": true,
   "globals": {
     "define": false,
-    "require": false
+    "require": false,
+    "PImage": false
   }
 }

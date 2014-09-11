@@ -12,8 +12,9 @@ define(function (require) {
    * Generally speaking users of this module will use the Filters.apply method
    * on a canvas to create an effect.
    *
-   * A number of functions are borrowed/adapted from http://www.html5rocks.com/en/tutorials/canvas/imagefilters/
-   * or the java processing implmentation.
+   * A number of functions are borrowed/adapted from
+   * http://www.html5rocks.com/en/tutorials/canvas/imagefilters/
+   * or the java processing implementation.
    */
 
   'use strict';
@@ -32,15 +33,21 @@ define(function (require) {
    *
    * @private
    *
-   * @param  {Canvas|ImageData} canvas
-   * @return {Uint8ClampedArray} a one-dimensional array containing the data
-   *                             in thc RGBA order, with integer values between 0 and 255
+   * @param  {Canvas|ImageData} canvas the canvas to get pixels from
+   * @return {Uint8ClampedArray}       a one-dimensional array containing
+   *                                   the data in thc RGBA order, with integer
+   *                                   values between 0 and 255
    */
   Filters._toPixels = function (canvas) {
     if (canvas instanceof ImageData) {
       return canvas.data;
     } else {
-      return canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+      return canvas.getContext('2d').getImageData(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      ).data;
     }
   };
 
@@ -50,9 +57,10 @@ define(function (require) {
    *
    * @private
    *
-   * @param  {Uint8ClampedArray} data [array returned by _toPixels()]
-   * @param  {Integer} i [index of a 1D Image Array]
-   * @return {Integer} 32 bit integer value representing ARGB value.
+   * @param  {Uint8ClampedArray} data array returned by _toPixels()
+   * @param  {Integer}           i    index of a 1D Image Array
+   * @return {Integer}                32 bit integer value representing
+   *                                  ARGB value.
    */
   Filters._getARGB = function (data, i) {
     var offset = i * 4;
@@ -67,8 +75,9 @@ define(function (require) {
    *
    * @private
    *
-   * @param {Uint8ClampedArray} pixels [array returned by _toPixels()]
-   * @param {Int32Array} data [source 1D array where each value represents ARGB values]
+   * @param {Uint8ClampedArray} pixels array returned by _toPixels()
+   * @param {Int32Array}        data   source 1D array where each value
+   *                                   represents ARGB values
    */
   Filters._setPixels = function (pixels, data) {
     var offset = 0;
@@ -87,15 +96,20 @@ define(function (require) {
    *
    * @private
    *
-   * @param  {Canvas|ImageData} canvas
-   * @return {ImageData} Holder of pixel data (and width and height)
-   *                     for a canvas
+   * @param  {Canvas|ImageData} canvas canvas to get image data from
+   * @return {ImageData}               Holder of pixel data (and width and
+   *                                   height) for a canvas
    */
   Filters._toImageData = function (canvas) {
     if (canvas instanceof ImageData) {
       return canvas;
     } else {
-      return canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+      return canvas.getContext('2d').getImageData(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
     }
   };
 
@@ -121,13 +135,13 @@ define(function (require) {
    * The difference between this and the actual filter functions defined below
    * is that the filter functions generally modify the pixel buffer but do
    * not actually put that data back to the canvas (where it would actually
-   * update what is visible). By contrast this method does make the changes actually
-   * visible in the canvas.
+   * update what is visible). By contrast this method does make the changes
+   * actually visible in the canvas.
    *
-   * The apply method is the method that callers of this module would generally use.
-   * It has been separated from the actual filters to support an advanced use case
-   * of creating a filter chain that executes without actually updating the canvas
-   * in between everystep.
+   * The apply method is the method that callers of this module would generally
+   * use. It has been separated from the actual filters to support an advanced
+   * use case of creating a filter chain that executes without actually updating
+   * the canvas in between everystep.
    *
    * @param  {[type]} func   [description]
    * @param  {[type]} canvas [description]
@@ -190,11 +204,12 @@ define(function (require) {
 
 
   /**
-   * Converts any colors in the image to grayscale equivalents. No parameter is used.
+   * Converts any colors in the image to grayscale equivalents.
+   * No parameter is used.
    *
    * Borrowed from http://www.html5rocks.com/en/tutorials/canvas/imagefilters/
    *
-   * @param  {Canvas} canvas
+   * @param {Canvas} canvas
    */
   Filters.gray = function (canvas) {
     var pixels = Filters._toPixels(canvas);
@@ -213,7 +228,7 @@ define(function (require) {
   /**
    * Sets the alpha channel to entirely opaque. No parameter is used.
    *
-   * @param  {Canvas} canvas
+   * @param {Canvas} canvas
    */
   Filters.opaque = function (canvas) {
     var pixels = Filters._toPixels(canvas);
@@ -227,7 +242,7 @@ define(function (require) {
 
   /**
    * Sets each pixel to its inverse value. No parameter is used.
-   * @param  {Invert}
+   * @param {Invert}
    */
   Filters.invert = function (canvas) {
     var pixels = Filters._toPixels(canvas);
@@ -255,21 +270,20 @@ define(function (require) {
     var pixels = Filters._toPixels(canvas);
 
     if ((level < 2) || (level > 255)) {
-      throw new Error('Level must be greater than 2 and less than 255 for posterize');
+      throw new Error(
+        'Level must be greater than 2 and less than 255 for posterize'
+      );
     }
 
     var levels1 = level - 1;
-    for (var i = 0; i < pixels.length; i++) {
-      var rlevel = (pixels[i] >> 16) & 0xff;
-      var glevel = (pixels[i] >> 8) & 0xff;
-      var blevel = pixels[i] & 0xff;
-      rlevel = (((rlevel * level) >> 8) * 255) / levels1;
-      glevel = (((glevel * level) >> 8) * 255) / levels1;
-      blevel = (((blevel * level) >> 8) * 255) / levels1;
-      pixels[i] = ((0xff000000 & pixels[i]) |
-        (rlevel << 16) |
-        (glevel << 8) |
-        blevel);
+    for (var i = 0; i < pixels.length; i+=4) {
+      var rlevel = pixels[i];
+      var glevel = pixels[i + 1];
+      var blevel = pixels[i + 2];
+
+      pixels[i] = (((rlevel * level) >> 8) * 255) / levels1;
+      pixels[i + 1] = (((glevel * level) >> 8) * 255) / levels1;
+      pixels[i + 2] = (((blevel * level) >> 8) * 255) / levels1;
     }
   };
 
@@ -316,11 +330,21 @@ define(function (require) {
         colRight = Filters._getARGB(pixels, idxRight);
 
         //compute luminance
-        currLum = 77*(colOrig>>16&0xff) + 151*(colOrig>>8&0xff) + 28*(colOrig&0xff);
-        lumLeft = 77*(colLeft>>16&0xff) + 151*(colLeft>>8&0xff) + 28*(colLeft&0xff);
-        lumRight = 77*(colRight>>16&0xff) + 151*(colRight>>8&0xff) + 28*(colRight&0xff);
-        lumUp = 77*(colUp>>16&0xff) + 151*(colUp>>8&0xff) + 28*(colUp&0xff);
-        lumDown = 77*(colDown>>16&0xff) + 151*(colDown>>8&0xff) + 28*(colDown&0xff);
+        currLum = 77*(colOrig>>16&0xff) +
+          151*(colOrig>>8&0xff) +
+          28*(colOrig&0xff);
+        lumLeft = 77*(colLeft>>16&0xff) +
+          151*(colLeft>>8&0xff) +
+          28*(colLeft&0xff);
+        lumRight = 77*(colRight>>16&0xff) +
+          151*(colRight>>8&0xff) +
+          28*(colRight&0xff);
+        lumUp = 77*(colUp>>16&0xff) +
+          151*(colUp>>8&0xff) +
+          28*(colUp&0xff);
+        lumDown = 77*(colDown>>16&0xff) +
+          151*(colDown>>8&0xff) +
+          28*(colDown&0xff);
 
         if (lumLeft > currLum) {
           colOut = colLeft;
@@ -387,11 +411,21 @@ define(function (require) {
         colRight = Filters._getARGB(pixels, idxRight);
 
         //compute luminance
-        currLum = 77*(colOrig>>16&0xff) + 151*(colOrig>>8&0xff) + 28*(colOrig&0xff);
-        lumLeft = 77*(colLeft>>16&0xff) + 151*(colLeft>>8&0xff) + 28*(colLeft&0xff);
-        lumRight = 77*(colRight>>16&0xff) + 151*(colRight>>8&0xff) + 28*(colRight&0xff);
-        lumUp = 77*(colUp>>16&0xff) + 151*(colUp>>8&0xff) + 28*(colUp&0xff);
-        lumDown = 77*(colDown>>16&0xff) + 151*(colDown>>8&0xff) + 28*(colDown&0xff);
+        currLum = 77*(colOrig>>16&0xff) +
+          151*(colOrig>>8&0xff) +
+          28*(colOrig&0xff);
+        lumLeft = 77*(colLeft>>16&0xff) +
+          151*(colLeft>>8&0xff) +
+          28*(colLeft&0xff);
+        lumRight = 77*(colRight>>16&0xff) +
+          151*(colRight>>8&0xff) +
+          28*(colRight&0xff);
+        lumUp = 77*(colUp>>16&0xff) +
+          151*(colUp>>8&0xff) +
+          28*(colUp&0xff);
+        lumDown = 77*(colDown>>16&0xff) +
+          151*(colDown>>8&0xff) +
+          28*(colDown&0xff);
 
         if (lumLeft < currLum) {
           colOut = colLeft;
@@ -415,8 +449,172 @@ define(function (require) {
     }
     Filters._setPixels(pixels, out);
   };
-  //TODO
+
   // BLUR
+
+  // internal kernel stuff for the gaussian blur filter
+  var blurRadius;
+  var blurKernelSize;
+  var blurKernel;
+  var blurMult;
+
+  /*
+   * Port of https://github.com/processing/processing/blob/
+   * master/core/src/processing/core/PImage.java#L1250
+   *
+   * Optimized code for building the blur kernel.
+   * further optimized blur code (approx. 15% for radius=20)
+   * bigger speed gains for larger radii (~30%)
+   * added support for various image types (ALPHA, RGB, ARGB)
+   * [toxi 050728]
+   */
+  function buildBlurKernel(r) {
+    var radius = (r * 3.5)|0;
+    radius = (radius < 1) ? 1 : ((radius < 248) ? radius : 248);
+
+    if (blurRadius !== radius) {
+      blurRadius = radius;
+      blurKernelSize = 1 + blurRadius<<1;
+      blurKernel = new Int32Array(blurKernelSize);
+      blurMult = new Array(blurKernelSize);
+      for(var l = 0; l < blurKernelSize; l++){
+        blurMult[l] = new Int32Array(256);
+      }
+
+      var bk,bki;
+      var bm,bmi;
+
+      for (var i = 1, radiusi = radius - 1; i < radius; i++) {
+        blurKernel[radius+i] = blurKernel[radiusi] = bki = radiusi * radiusi;
+        bm = blurMult[radius+i];
+        bmi = blurMult[radiusi--];
+        for (var j = 0; j < 256; j++){
+          bm[j] = bmi[j] = bki * j;
+        }
+      }
+      bk = blurKernel[radius] = radius * radius;
+      bm = blurMult[radius];
+
+      for (var k = 0; k < 256; k++){
+        bm[k] = bk * k;
+      }
+    }
+
+  }
+
+  // Port of https://github.com/processing/processing/blob/
+  // master/core/src/processing/core/PImage.java#L1349
+  function blurRGB(canvas, radius) {
+    var pixels = Filters._toPixels(canvas);
+    var width = canvas.width;
+    var height = canvas.height;
+    var numPackedPixels = width * height;
+
+    //Pack the color data for each pixel into one int
+    var argb = new Int32Array(numPackedPixels);
+    for(var j = 0; j < numPackedPixels; j++){
+      argb[j] = Filters._getARGB(pixels, j);
+    }
+
+    var sum, cr, cg, cb;
+    var read, ri, ym, ymi, bk0;
+
+    var r2 = new Int32Array(numPackedPixels);
+    var g2 = new Int32Array(numPackedPixels);
+    var b2 = new Int32Array(numPackedPixels);
+
+    var yi = 0;
+
+    buildBlurKernel(radius);
+
+    var x, y, i;
+    var bm;
+
+    for(y = 0; y < height; y++) {
+      for(x = 0; x < width; x++) {
+        cb = cg = cr = sum = 0;
+        read = x - blurRadius;
+
+        if(read < 0) {
+          bk0 = -read;
+          read = 0;
+        } else {
+          if (read >= width){
+            break;
+          }
+          bk0 = 0;
+        }
+
+        for (i = bk0; i < blurKernelSize; i++) {
+          if (read >= width){
+            break;
+          }
+
+          var c = argb[read + yi];
+          bm = blurMult[i];
+          cr += bm[(c & 0x00ff0000) >> 16];
+          cg += bm[(c & 0x0000ff00) >> 8];
+          cb += bm[c & 0x000000ff];
+          sum += blurKernel[i];
+          read++;
+        }
+        ri = yi + x;
+        r2[ri] = (cr / sum);
+        g2[ri] = (cg / sum);
+        b2[ri] = (cb / sum);
+      }
+      yi += width;
+    }
+
+    yi = 0;
+    ym = -blurRadius;
+    ymi= ym * width;
+
+    for(y = 0; y < height; y++) {
+      for(x = 0; x < width; x++) {
+        cb = cg = cr = sum = 0;
+        if(ym < 0) {
+          bk0 = ri = -ym;
+          read = x;
+        } else {
+          if (ym >= height){
+            break;
+          }
+          bk0 = 0;
+          ri = ym;
+          read = x + ymi;
+        }
+        for (i = bk0; i < blurKernelSize; i++) {
+          if (ri >= height){
+            break;
+          }
+
+          bm = blurMult[i];
+          cr += bm[r2[read]];
+          cg += bm[g2[read]];
+          cb += bm[b2[read]];
+          sum += blurKernel[i];
+          ri++;
+          read += width;
+        }
+
+        argb[x+yi] = 0xff000000 |
+          ((cr/sum))<<16 |
+          ((cg/sum))<<8 |
+          ((cb/sum));
+      }
+      yi += width;
+      ymi += width;
+      ym++;
+    }
+
+    Filters._setPixels(pixels, argb);
+  }
+
+  Filters.blur = function(canvas, radius){
+    blurRGB(canvas, radius);
+  };
+
 
   return Filters;
 
